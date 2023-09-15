@@ -7,27 +7,27 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <table class="main_font_size top_margin lefty_table">
+    <table class="main_font_size top_margin lefty_table" id="speedTable">
         <tr>
             <td class="no-border"><b>Speed</b></td>
-            <td>Row 1, Column 2</td>
+            <td class="speed-float-cell" id="kphCell">10.0</td>
             <td><b>kph</b></td>
         </tr>
         <tr>
             <td class="no-border"></td>
-            <td>Row 2, Column 2</td>
+            <td id="mphCell">10.0</td>
             <td><b>mph</b></td>
         </tr>
     </table>
 
-    <table class="main_font_size" id="paceTable">
+    <table class="main_font_size pace_table" id="paceTable">
         <thead>
             <tr>
-                <th>Distance</th>
-                <th>H</th>
-                <th>M</th>
-                <th>S</th>
-                <th>1/1000</th>
+                <th class="cell_underlined">Distance</th>
+                <th class="cell_underlined">H</th>
+                <th class="cell_underlined">M</th>
+                <th class="cell_underlined">S</th>
+                <th class="cell_underlined">1/1000</th>
             </tr>
         </thead>
         <tbody>
@@ -81,12 +81,13 @@
                 <td>Row 7, Col 5</td>
             </tr>
             <tr>
-                <td><div class="inline-elements">
-                    <input type="number" class="main_font_size dist_input txt_input" id="custom_dist_1" name="cd1" value="8000">
+                <td>
+                    <div class="inline-elements">
+                    <input type="number" class="main_font_size dist_input txt_input" id="custom_dist_1" name="cd1" value="50">
                     <select class="main_font_size dist_input" id="custom_dist_1" name="cd1">
                         <optgroup label="Metric">
-                            <option value=0 selected>m</option>
-                            <option value=1>k</option>
+                            <option value=0>m</option>
+                            <option value=1 selected>k</option>
                         </optgroup>
                         <optgroup label="Statute">
                             <option value=2>ft</option>
@@ -101,15 +102,16 @@
                 <td>Row 8, Col 5</td>
             </tr>
             <tr>
-                <td><input type="number" class="main_font_size dist_input txt_input" id="custom_dist_2" name="textInput" value="100">
+                <td>
+                    <input type="number" class="main_font_size dist_input txt_input" id="custom_dist_2" name="textInput" value="100">
                     <select class="main_font_size dist_input" id="custom_unit_2" name="cd2" value=1">
                         <optgroup label="Metric">
                             <option value=0>m</option>
-                            <option value=1 selected>k</option>
+                            <option value=1>k</option>
                         </optgroup>
                         <optgroup label="Statute">
                             <option value=2>ft</option>
-                            <option value=3>mi</option>
+                            <option value=3 selected>mi</option>
                         </optgroup>
                     </select></td>
                 <td>Row 9, Col 2</td>
@@ -122,10 +124,12 @@
 
     <table>
         <tr>
-            <td class="no-border"><input class="vertical-slider" type="range" step="0.001" min="5.0" max="25.0"
-                    value="12.0"></td>
-            <td class="no-border"><input class="vertical-slider" type="range" step="0.001" min="-1.0" max="1.0"
-                    value="0"></td>
+            <td class="no-border">
+                <input class="vertical-slider"  id="coarseSlider" type="range" step="0.001" min="5.0" max="25.0" value="12.0">
+            </td>
+            <td class="no-border">
+                <input class="vertical-slider" id="fineSlider" type="range" step="0.001" min="-1.0" max="1.0" value="0">
+            </td>
         </tr>
         <tr>
             <td class="no-border" style="font-size: 10px;">Coarse</td>

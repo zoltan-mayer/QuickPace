@@ -18,7 +18,7 @@ html {
 
 .vertical-slider {
     -webkit-appearance: none;
-    height: 200px;
+    height: 300px;
     border-radius: 5px;
     background: #ccc;
     outline: none;
@@ -30,6 +30,10 @@ html {
     /*margin: 0;*/
     margin-top: 20px;
     margin-bottom: 10px;
+}
+
+.speed-float-cell {
+    width: 55px;
 }
 
 .inline-elements {
@@ -44,6 +48,10 @@ table {
     margin-bottom: 10px;
 }
 
+.pace_table tbody tr:nth-child(odd) {
+    background-color: #e6e5e5; /* Set the background color for even rows */
+}
+
 td.no-border {
     border: none;
 }
@@ -53,4 +61,8 @@ td {
     border: 1px solid black;
     padding: 4px;
     text-align: center;
+}
+
+.cell_underlined {
+    border-bottom: 3px solid black;
 }
