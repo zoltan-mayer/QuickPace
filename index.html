@@ -9,14 +9,16 @@
 <body>
     <table class="main_font_size top_margin lefty_table" id="speedTable">
         <tr>
-            <td class="no-border"><b>Speed</b></td>
+            <td class="no-border"><u><b>Speed</b></u></td>
             <td class="speed-float-cell" id="kphCell">10.0</td>
             <td><b>kph</b></td>
+            <td class="no-border"></td>
         </tr>
         <tr>
             <td class="no-border"></td>
             <td id="mphCell">10.0</td>
             <td><b>mph</b></td>
+            <td class="no-border"></td>
         </tr>
     </table>
 
@@ -84,14 +86,14 @@
                 <td>
                     <div class="inline-elements">
                     <input type="number" class="main_font_size dist_input txt_input" id="custom_dist_1" name="cd1" value="50">
-                    <select class="main_font_size dist_input" id="custom_dist_1" name="cd1">
+                    <select class="main_font_size dist_input" id="custom_unit_1" name="cu1">
                         <optgroup label="Metric">
-                            <option value=0>m</option>
-                            <option value=1 selected>k</option>
+                            <option value=1>m</option>
+                            <option value=1000 selected>k</option>
                         </optgroup>
                         <optgroup label="Statute">
-                            <option value=2>ft</option>
-                            <option value=3>mi</option>
+                            <option value=0.3048>ft</option>
+                            <option value=1609.344>mi</option>
                         </optgroup>
                     </select>
                     </div>
@@ -104,14 +106,14 @@
             <tr>
                 <td>
                     <input type="number" class="main_font_size dist_input txt_input" id="custom_dist_2" name="textInput" value="100">
-                    <select class="main_font_size dist_input" id="custom_unit_2" name="cd2" value=1">
+                    <select class="main_font_size dist_input" id="custom_unit_2" name="cu2">
                         <optgroup label="Metric">
-                            <option value=0>m</option>
-                            <option value=1>k</option>
+                            <option value=1>m</option>
+                            <option value=1000>k</option>
                         </optgroup>
                         <optgroup label="Statute">
-                            <option value=2>ft</option>
-                            <option value=3 selected>mi</option>
+                            <option value=0.3048>ft</option>
+                            <option value=1609.344 selected>mi</option>
                         </optgroup>
                     </select></td>
                 <td>Row 9, Col 2</td>
@@ -125,10 +127,10 @@
     <table>
         <tr>
             <td class="no-border">
-                <input class="vertical-slider"  id="coarseSlider" type="range" step="0.001" min="5.0" max="25.0" value="12.0">
+                <input class="vertical-slider"  id="coarseSlider" type="range" step="0.0001" min="5.5" max="24.5" value="12.0">
             </td>
             <td class="no-border">
-                <input class="vertical-slider" id="fineSlider" type="range" step="0.001" min="-1.0" max="1.0" value="0">
+                <input class="vertical-slider" id="fineSlider" type="range" step="0.0001" min="-0.5" max="0.5" value="0">
             </td>
         </tr>
         <tr>
