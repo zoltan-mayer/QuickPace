@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QuickPace</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <table class="main_font_size top_margin lefty_table">
+        <tr>
+            <td class="no-border"><b>Speed</b></td>
+            <td>Row 1, Column 2</td>
+            <td><b>kph</b></td>
+        </tr>
+        <tr>
+            <td class="no-border"></td>
+            <td>Row 2, Column 2</td>
+            <td><b>mph</b></td>
+        </tr>
+    </table>
+
+    <table class="main_font_size" id="paceTable">
+        <thead>
+            <tr>
+                <th>Distance</th>
+                <th>H</th>
+                <th>M</th>
+                <th>S</th>
+                <th>1/1000</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><b>1k</b></td>
+                <td>Row 1, Col 2</td>
+                <td>Row 1, Col 3</td>
+                <td>Row 1, Col 4</td>
+                <td>Row 1, Col 5</td>
+            </tr>
+            <tr>
+                <td><b>1mi</b></td>
+                <td>Row 2, Col 2</td>
+                <td>Row 2, Col 3</td>
+                <td>Row 2, Col 4</td>
+                <td>Row 2, Col 5</td>
+            </tr>
+            <tr>
+                <td><b>5k</b></td>
+                <td>Row 3, Col 2</td>
+                <td>Row 3, Col 3</td>
+                <td>Row 3, Col 4</td>
+                <td>Row 3, Col 5</td>
+            </tr>
+            <tr>
+                <td><b>10k</b></td>
+                <td>Row 4, Col 2</td>
+                <td>Row 4, Col 3</td>
+                <td>Row 4, Col 4</td>
+                <td>Row 4, Col 5</td>
+            </tr>
+            <tr>
+                <td><b>10mi</b></td>
+                <td>Row 5, Col 2</td>
+                <td>Row 5, Col 3</td>
+                <td>Row 5, Col 4</td>
+                <td>Row 5, Col 5</td>
+            </tr>
+            <tr>
+                <td><b>half</b></td>
+                <td>Row 6, Col 2</td>
+                <td>Row 6, Col 3</td>
+                <td>Row 6, Col 4</td>
+                <td>Row 6, Col 5</td>
+            </tr>
+            <tr>
+                <td><b>marathon</b></td>
+                <td>Row 7, Col 2</td>
+                <td>Row 7, Col 3</td>
+                <td>Row 7, Col 4</td>
+                <td>Row 7, Col 5</td>
+            </tr>
+            <tr>
+                <td><div class="inline-elements">
+                    <input type="number" class="main_font_size dist_input txt_input" id="custom_dist_1" name="cd1" value="8000">
+                    <select class="main_font_size dist_input" id="custom_dist_1" name="cd1">
+                        <optgroup label="Metric">
+                            <option value=0 selected>m</option>
+                            <option value=1>k</option>
+                        </optgroup>
+                        <optgroup label="Statute">
+                            <option value=2>ft</option>
+                            <option value=3>mi</option>
+                        </optgroup>
+                    </select>
+                    </div>
+                </td>
+                <td>Row 8, Col 2</td>
+                <td>Row 8, Col 3</td>
+                <td>Row 8, Col 4</td>
+                <td>Row 8, Col 5</td>
+            </tr>
+            <tr>
+                <td><input type="number" class="main_font_size dist_input txt_input" id="custom_dist_2" name="textInput" value="100">
+                    <select class="main_font_size dist_input" id="custom_unit_2" name="cd2" value=1">
+                        <optgroup label="Metric">
+                            <option value=0>m</option>
+                            <option value=1 selected>k</option>
+                        </optgroup>
+                        <optgroup label="Statute">
+                            <option value=2>ft</option>
+                            <option value=3>mi</option>
+                        </optgroup>
+                    </select></td>
+                <td>Row 9, Col 2</td>
+                <td>Row 9, Col 3</td>
+                <td>Row 9, Col 4</td>
+                <td>Row 9, Col 5</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <table>
+        <tr>
+            <td class="no-border"><input class="vertical-slider" type="range" step="0.001" min="5.0" max="25.0"
+                    value="12.0"></td>
+            <td class="no-border"><input class="vertical-slider" type="range" step="0.001" min="-1.0" max="1.0"
+                    value="0"></td>
+        </tr>
+        <tr>
+            <td class="no-border" style="font-size: 10px;">Coarse</td>
+            <td class="no-border" style="font-size: 10px;">Fine</td>
+        </tr>
+    </table>
+    <script src="index.js"></script>
+</body>
+</html>
