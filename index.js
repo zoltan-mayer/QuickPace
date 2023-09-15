@@ -49,12 +49,16 @@ function update_pace_table() {
         rem_duration_ms = rem_duration_ms - (seconds * 1000.0);
         let thou = parseFloat(rem_duration_ms).toFixed(0);
 
-        if (1.0 > hours) { hours = ""; }
-        if (1.0 > mins) { mins = ""; }
-        if ((1.0 > seconds) && (1.0 > mins)) {
+        if (1.0 > hours) {
+            hours = "";
+        }
+        if ((1.0 > mins) && (1.0 > hours)) {
+            mins = "";
+        }
+        if ((1.0 > seconds) && (1.0 > mins) && (1.0 > hours)) {
             seconds = ""; 
         }
-        if ((1.0 > thou) && (1.0 > seconds) && (1.0 > mins)) {
+        if ((1.0 > thou) && (1.0 > seconds) && (1.0 > mins) && (1.0 > hours)) {
             thou = "";
         }
 
