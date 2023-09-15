@@ -24,6 +24,10 @@ for (let i = 0; i < speed_table.rows.length; i++) {
     }
 }
 
+for (let i = 1; i < pace_table.rows[0].cells.length; i++) {
+    pace_table.rows[0].cells[i].style.width = 45 + 'px';
+}
+
 let speed_table_row_width = speed_table.rows[0].offsetWidth;
 let pace_table_row_width = pace_table.rows[0].offsetWidth;
 speed_table.rows[0].cells[3].style.width = (pace_table_row_width - speed_table_row_width - 30) + 'px';
@@ -32,8 +36,32 @@ const one_mile = 1609.344;
 const dist_array = [1, 1000, one_mile, 5000, 10000, (10 * one_mile), 21097.5, (2 * 21097.5), 1, 1];
 
 function update_pace_table() {
+    let speed_mps = speed_kph_var / 3.6;
     for (let i = 1; i < pace_table.rows.length; ++i) {
-        console.log(i + ' ' + dist_array[i]);
+        let duration_ms = (dist_array[i] / speed_mps) * 1000.0;
+        duration_ms = parseFloat(duration_ms).toFixed(0);
+        let rem_duration_ms = duration_ms;
+        let hours = Math.floor((rem_duration_ms / 1000.0) / 60.0 / 60.0);
+        rem_duration_ms = rem_duration_ms - (hours * 1000.0 * 60 * 60);
+        let mins = Math.floor((rem_duration_ms / 1000.0) / 60.0);
+        rem_duration_ms = rem_duration_ms - (mins * 1000.0 * 60);
+        let seconds = Math.floor(rem_duration_ms / 1000.0);
+        rem_duration_ms = rem_duration_ms - (seconds * 1000.0);
+        let thou = parseFloat(rem_duration_ms).toFixed(0);
+
+        if (1.0 > hours) { hours = ""; }
+        if (1.0 > mins) { mins = ""; }
+        if ((1.0 > seconds) && (1.0 > mins)) {
+            seconds = ""; 
+        }
+        if ((1.0 > thou) && (1.0 > seconds) && (1.0 > mins)) {
+            thou = "";
+        }
+
+        pace_table.rows[i].cells[1].innerHTML = hours;
+        pace_table.rows[i].cells[2].innerHTML = mins;
+        pace_table.rows[i].cells[3].innerHTML = seconds;
+        pace_table.rows[i].cells[4].innerHTML = thou;
     } 
 }
 
