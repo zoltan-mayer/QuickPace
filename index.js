@@ -79,8 +79,8 @@ const cd_1_val = document.getElementById("custom_dist_1");
 const cd_1_unit = document.getElementById("custom_unit_1");
 const cd_2_val = document.getElementById("custom_dist_2");
 const cd_2_unit = document.getElementById("custom_unit_2");
-const kph_cell = document.getElementById("kphCell");
-const mph_cell = document.getElementById("mphCell");
+const kph_cell = document.getElementById("speed_input_kph");
+const mph_cell = document.getElementById("speed_input_mph");
 
 var kph_store = localStorage.getItem('speed_kph');
 if (kph_store !== null) {
@@ -131,8 +131,8 @@ noUiSlider.create(fine_slider, {
     }
 });
 
-kph_cell.innerHTML = parseFloat(speed_kph_var).toFixed(3);
-mph_cell.innerHTML = parseFloat(speed_kph_var * 0.6213712).toFixed(3);
+kph_cell.value = parseFloat(speed_kph_var).toFixed(3);
+mph_cell.value = parseFloat(speed_kph_var * 0.6213712).toFixed(3);
 
 let custom_distance_1 = parseFloat(cd_1_val.value) * parseFloat(custom_unit_array[cd_1_unit.value]);
 let custom_distance_2 = parseFloat(cd_2_val.value) * parseFloat(custom_unit_array[cd_2_unit.value]);
@@ -150,8 +150,8 @@ function on_fine_slider_input(values, handle, unencoded, tap, positions, noUiSli
         if (25.0 < stored_speed) { stored_speed = 25.0; }
         if (5.0 > stored_speed) { stored_speed = 5.0; }
         localStorage.setItem('speed_kph', stored_speed);
-        kph_cell.innerHTML = parseFloat(speed_kph_var).toFixed(3);
-        mph_cell.innerHTML = parseFloat(speed_kph_var * 0.6213712).toFixed(3);
+        kph_cell.value = parseFloat(speed_kph_var).toFixed(3);
+        mph_cell.value = parseFloat(speed_kph_var * 0.6213712).toFixed(3);
 
         update_pace_table();
     }
@@ -174,8 +174,8 @@ function on_coarse_slider_input(values, handle, unencoded, tap, positions, noUiS
     if (25.0 < stored_speed) { stored_speed = 25.0; }
     if (5.0 > stored_speed) { stored_speed = 5.0; }
     localStorage.setItem('speed_kph', stored_speed);
-    kph_cell.innerHTML = parseFloat(speed_kph_var).toFixed(3);
-    mph_cell.innerHTML = parseFloat(speed_kph_var * 0.6213712).toFixed(3);
+    kph_cell.value = parseFloat(speed_kph_var).toFixed(3);
+    mph_cell.value = parseFloat(speed_kph_var * 0.6213712).toFixed(3);
 
     update_pace_table();
 }
@@ -205,6 +205,46 @@ function on_custom_dist_input() {
     update_pace_table();
 }
 
+function on_speed_input(is_kph) {
+    var kph = parseFloat(kph_cell.value)
+    if (isNaN(kph)) { kph = 12.0; }
+    if (5.0 > kph) { kph = 5.0; }
+    if (25.0 < kph) { kph = 25.0; }
+
+    var mph = parseFloat(mph_cell.value)
+    if (isNaN(mph)) { mph = 7.4565; }
+    if (3.1069 > mph) { mph = 3.1069; }
+    if (15.5343 < mph) { mph = 15.5343; }
+
+    if (true == is_kph) {
+        speed_kph_var = kph;
+        mph_cell.value = parseFloat(speed_kph_var * 0.6213712).toFixed(3);
+    }
+    else {
+        speed_kph_var = mph / 0.6213712;
+        kph_cell.value = parseFloat(speed_kph_var).toFixed(3);
+    }
+
+    var stored_speed = speed_kph_var;
+    if (25.0 < stored_speed) { stored_speed = 25.0; }
+    if (5.0 > stored_speed) { stored_speed = 5.0; }
+    localStorage.setItem('speed_kph', stored_speed);
+
+    coarse_slider.noUiSlider.set(speed_kph_var * 100.0);
+
+    fine_speed_value = 0.0;
+
+    update_pace_table();
+}
+
+function on_speed_kph_input() {
+    on_speed_input(true);
+}
+
+function on_speed_mph_input() {
+    on_speed_input(false);
+}
+
 coarse_slider.noUiSlider.on('update', on_coarse_slider_input);
 fine_slider.noUiSlider.on('update', on_fine_slider_input);
 fine_slider.noUiSlider.on('change', on_fine_slider_end);
@@ -221,3 +261,10 @@ cd_2_val.oninput   = on_custom_dist_input;
 cd_2_unit.onclick  = on_custom_dist_input;
 cd_2_unit.onselect = on_custom_dist_input;
 cd_2_unit.oninput  = on_custom_dist_input;
+
+kph_cell.onclick   = on_speed_kph_input;
+kph_cell.onselect  = on_speed_kph_input;
+kph_cell.oninput   = on_speed_kph_input;
+mph_cell.onclick   = on_speed_mph_input;
+mph_cell.onselect  = on_speed_mph_input;
+mph_cell.oninput   = on_speed_mph_input;

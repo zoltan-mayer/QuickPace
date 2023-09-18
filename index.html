@@ -12,13 +12,17 @@
     <table class="main_font_size lefty_table" id="speedTable" style="margin-top: 8px;">
         <tr>
             <td class="no-border"><u><b>Speed</b></u></td>
-            <td class="speed-float-cell" id="kphCell" style="border-right: none;">10.0</td>
+            <td class="speed-float-cell" style="border-right: none;">
+                <input type="number" min="5" max="25" class="main_font_size dist_input txt_input" id="speed_input_kph" name="textInput" value="12.0">
+            </td>
             <td style="border-left: none;"><b>kph</b></td>
             <td class="no-border"></td>
         </tr>
         <tr>
             <td class="no-border"></td>
-            <td id="mphCell" style="border-right: none;">10.0</td>
+            <td style="border-right: none;">
+                <input type="number" min="3" max="15" class="main_font_size dist_input txt_input" id="speed_input_mph" name="textInput" value="7">
+            </td>
             <td style="border-left: none;"><b>mph</b></td>
             <td class="no-border"></td>
         </tr>
@@ -87,7 +91,7 @@
             <tr>
                 <td>
                     <div class="inline-elements">
-                    <input type="number" min="0" max="9999999" class="main_font_size dist_input txt_input" id="custom_dist_1" name="cd1" value="50">
+                    <input type="number" min="0" max="9999999" class="main_font_size dist_input txt_input" id="custom_dist_1" value="50">
                     <select class="main_font_size dist_input" id="custom_unit_1" name="cu1">
                         <optgroup label="Metric">
                             <option value=0>m</option>
@@ -107,7 +111,7 @@
             </tr>
             <tr>
                 <td>
-                    <input type="number" min="0" max="9999999" class="main_font_size dist_input txt_input" id="custom_dist_2" name="textInput" value="100">
+                    <input type="number" min="0" max="9999999" class="main_font_size dist_input txt_input" id="custom_dist_2" value="100">
                     <select class="main_font_size dist_input" id="custom_unit_2" name="cu2">
                         <optgroup label="Metric">
                             <option value=0>m</option>
