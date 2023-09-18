@@ -150,11 +150,6 @@ function on_custom_dist_input() {
     dist_array[dist_array.length - 2] = custom_distance_1;
     dist_array[dist_array.length - 1] = custom_distance_2;
 
-    const dbg_cell_1 = document.getElementById("cust_dbg_1");
-    const dbg_cell_2 = document.getElementById("cust_dbg_2");
-    dbg_cell_1.innerHTML = parseFloat(dist_array[dist_array.length - 2]).toFixed(3);
-    dbg_cell_2.innerHTML = parseFloat(dist_array[dist_array.length - 1]).toFixed(3);
-
     update_pace_table();
 }
 
