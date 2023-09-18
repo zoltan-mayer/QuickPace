@@ -35,7 +35,9 @@ speed_table.rows[0].cells[3].style.width = (pace_table_row_width - speed_table_r
 const one_mile = 1609.344;
 const dist_array = [1, 1000, one_mile, 5000, 10000, (10 * one_mile), 21097.5, (2 * 21097.5), 1, 1];
 const custom_unit_array = [1, 1000, 0.3048, one_mile];
-const initial_speed = 12.0;
+let speed_kph_var = 12.0;
+let fine_speed_value = 0.0;
+let is_last_event_end = false;
 
 function update_pace_table() {
     let speed_mps = speed_kph_var / 3.6;
@@ -80,6 +82,14 @@ const cd_2_unit = document.getElementById("custom_unit_2");
 const kph_cell = document.getElementById("kphCell");
 const mph_cell = document.getElementById("mphCell");
 
+var kph_store = localStorage.getItem('speed_kph');
+if (kph_store !== null) {
+    speed_kph_var = parseFloat(kph_store);
+    if (isNaN(speed_kph_var) || (5.0 > speed_kph_var) || (25.0 < speed_kph_var)) {
+        speed_kph_var = 0.0;
+    }
+}
+
 var cust_dist_store1 = localStorage.getItem('custom_dist_1');
 if (cust_dist_store1 !== null) {
     cd_1_val.value = parseFloat(cust_dist_store1);
@@ -100,31 +110,27 @@ if (cust_unit_store2 !== null) {
 
 noUiSlider.create(coarse_slider, {
     connect: 'lower',
-    start: 12.0,
-    step: 0.01,
+    start: speed_kph_var,
     direction: 'rtl',
     orientation: 'vertical',
     animationDuration: 1000,
     range: {
-        'min': 5.5,
-        'max': 24.5
+        'min': 5.0,
+        'max': 25.0
     }
 });
 
 noUiSlider.create(fine_slider, {
-    connect: 'lower',
     start: 0.0,
-    step: 0.001,
     direction: 'rtl',
     orientation: 'vertical',
     animationDuration: 1000,
     range: {
-        'min': -0.5,
-        'max': 0.5
+        'min': -1.0,
+        'max': 1.0
     }
 });
 
-let speed_kph_var = initial_speed;
 kph_cell.innerHTML = parseFloat(speed_kph_var).toFixed(3);
 mph_cell.innerHTML = parseFloat(speed_kph_var * 0.6213712).toFixed(3);
 
@@ -136,24 +142,43 @@ dist_array[dist_array.length - 1] = custom_distance_2;
 update_pace_table();
 
 function on_fine_slider_input(values, handle, unencoded, tap, positions, noUiSlider) {
-    var coarse_val = coarse_slider.noUiSlider.get();
-    var fine_val = fine_slider.noUiSlider.get();
-    speed_kph_var = parseFloat(Number(coarse_val) + Number(fine_val)).toFixed(5);
+    if (false == is_last_event_end) {
+        var coarse_val = coarse_slider.noUiSlider.get();
+        var fine_val = (fine_speed_value + parseFloat(fine_slider.noUiSlider.get())) / 100.0;
+        speed_kph_var = parseFloat(coarse_val) + parseFloat(fine_val);
+        localStorage.setItem('speed_kph', speed_kph_var);
+        kph_cell.innerHTML = parseFloat(speed_kph_var).toFixed(3);
+        mph_cell.innerHTML = parseFloat(speed_kph_var * 0.6213712).toFixed(3);
+
+        update_pace_table();
+    }
+
+    is_last_event_end = false;
+}
+
+function on_fine_slider_end(values, handle, unencoded, tap, positions, noUiSlider) {
+    fine_speed_value += parseFloat(fine_slider.noUiSlider.get());
+
+    fine_slider.noUiSlider.updateOptions({
+        animate: false
+    });
+    fine_slider.noUiSlider.reset();
+    fine_slider.noUiSlider.updateOptions({
+        animate: true
+    });
+
+    is_last_event_end = true;
+}
+
+function on_coarse_slider_input(values, handle, unencoded, tap, positions, noUiSlider) {
+    fine_speed_value = 0.0;
+
+    speed_kph_var = parseFloat(coarse_slider.noUiSlider.get()).toFixed(5);
+    localStorage.setItem('speed_kph', speed_kph_var);
     kph_cell.innerHTML = parseFloat(speed_kph_var).toFixed(3);
     mph_cell.innerHTML = parseFloat(speed_kph_var * 0.6213712).toFixed(3);
 
     update_pace_table();
-}
-
-function on_coarse_slider_input(values, handle, unencoded, tap, positions, noUiSlider) {
-    fine_slider.noUiSlider.updateOptions({
-        animate: false
-    });
-    fine_slider.noUiSlider.set(0.0);
-    fine_slider.noUiSlider.updateOptions({
-        animate: true
-    });
-    on_fine_slider_input(values, handle, unencoded, tap, positions, noUiSlider);
 }
 
 function on_custom_dist_input() {
@@ -183,6 +208,7 @@ function on_custom_dist_input() {
 
 coarse_slider.noUiSlider.on('update', on_coarse_slider_input);
 fine_slider.noUiSlider.on('update', on_fine_slider_input);
+fine_slider.noUiSlider.on('change', on_fine_slider_end);
 
 cd_1_val.onclick   = on_custom_dist_input;
 cd_1_val.onselect  = on_custom_dist_input;
