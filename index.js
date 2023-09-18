@@ -1,11 +1,12 @@
+let original_document_height = 0;
 
 function resize_sliders_as_needed() {
     const elements = document.getElementsByClassName('sliderdiv');
-    var needed_height = document.body.scrollHeight;
     var available_height = document.documentElement.clientHeight;
 
-    if (available_height < needed_height) {
-        var new_slider_height = needed_height - available_height;
+    if (available_height < original_document_height) {
+        var missing_height = original_document_height - available_height;
+        var new_slider_height = 300 - missing_height - 30;
         if (150 > new_slider_height) { new_slider_height = 150; }
 
         for (let i = 0; i < elements.length; i++) {
@@ -19,7 +20,13 @@ function resize_sliders_as_needed() {
     }
 }
 
-window.addEventListener('load', resize_sliders_as_needed);
+function on_page_load() {
+    original_document_height = document.body.scrollHeight;
+
+    resize_sliders_as_needed();
+}
+
+window.addEventListener('load', on_page_load);
 window.addEventListener('resize', resize_sliders_as_needed);
 
 // Begin: table formatting
