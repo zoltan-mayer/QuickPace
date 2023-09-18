@@ -86,7 +86,7 @@ var kph_store = localStorage.getItem('speed_kph');
 if (kph_store !== null) {
     speed_kph_var = parseFloat(kph_store);
     if (isNaN(speed_kph_var) || (5.0 > speed_kph_var) || (25.0 < speed_kph_var)) {
-        speed_kph_var = 0.0;
+        speed_kph_var = 12.0;
     }
 }
 
@@ -110,13 +110,13 @@ if (cust_unit_store2 !== null) {
 
 noUiSlider.create(coarse_slider, {
     connect: 'lower',
-    start: speed_kph_var,
+    start: speed_kph_var * 100.0,
     direction: 'rtl',
     orientation: 'vertical',
-    animationDuration: 1000,
+    animationDuration: 300,
     range: {
-        'min': 5.0,
-        'max': 25.0
+        'min': 500,
+        'max': 2500
     }
 });
 
@@ -124,7 +124,7 @@ noUiSlider.create(fine_slider, {
     start: 0.0,
     direction: 'rtl',
     orientation: 'vertical',
-    animationDuration: 1000,
+    animationDuration: 100,
     range: {
         'min': -1.0,
         'max': 1.0
@@ -143,10 +143,13 @@ update_pace_table();
 
 function on_fine_slider_input(values, handle, unencoded, tap, positions, noUiSlider) {
     if (false == is_last_event_end) {
-        var coarse_val = coarse_slider.noUiSlider.get();
+        var coarse_val = parseFloat(coarse_slider.noUiSlider.get()) / 100.0;
         var fine_val = (fine_speed_value + parseFloat(fine_slider.noUiSlider.get())) / 100.0;
         speed_kph_var = parseFloat(coarse_val) + parseFloat(fine_val);
-        localStorage.setItem('speed_kph', speed_kph_var);
+        var stored_speed = speed_kph_var;
+        if (25.0 < stored_speed) { stored_speed = 25.0; }
+        if (5.0 > stored_speed) { stored_speed = 5.0; }
+        localStorage.setItem('speed_kph', stored_speed);
         kph_cell.innerHTML = parseFloat(speed_kph_var).toFixed(3);
         mph_cell.innerHTML = parseFloat(speed_kph_var * 0.6213712).toFixed(3);
 
@@ -158,14 +161,7 @@ function on_fine_slider_input(values, handle, unencoded, tap, positions, noUiSli
 
 function on_fine_slider_end(values, handle, unencoded, tap, positions, noUiSlider) {
     fine_speed_value += parseFloat(fine_slider.noUiSlider.get());
-
-    fine_slider.noUiSlider.updateOptions({
-        animate: false
-    });
     fine_slider.noUiSlider.reset();
-    fine_slider.noUiSlider.updateOptions({
-        animate: true
-    });
 
     is_last_event_end = true;
 }
@@ -173,8 +169,11 @@ function on_fine_slider_end(values, handle, unencoded, tap, positions, noUiSlide
 function on_coarse_slider_input(values, handle, unencoded, tap, positions, noUiSlider) {
     fine_speed_value = 0.0;
 
-    speed_kph_var = parseFloat(coarse_slider.noUiSlider.get()).toFixed(5);
-    localStorage.setItem('speed_kph', speed_kph_var);
+    speed_kph_var = parseFloat(coarse_slider.noUiSlider.get()) / 100.0;
+    var stored_speed = speed_kph_var;
+    if (25.0 < stored_speed) { stored_speed = 25.0; }
+    if (5.0 > stored_speed) { stored_speed = 5.0; }
+    localStorage.setItem('speed_kph', stored_speed);
     kph_cell.innerHTML = parseFloat(speed_kph_var).toFixed(3);
     mph_cell.innerHTML = parseFloat(speed_kph_var * 0.6213712).toFixed(3);
 
