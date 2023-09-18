@@ -86,6 +86,7 @@ noUiSlider.create(coarse_slider, {
     step: 0.01,
     direction: 'rtl',
     orientation: 'vertical',
+    animationDuration: 1000,
     range: {
         'min': 5.5,
         'max': 24.5
@@ -95,9 +96,10 @@ noUiSlider.create(coarse_slider, {
 noUiSlider.create(fine_slider, {
     connect: 'lower',
     start: 0.0,
-    step: 0.01,
+    step: 0.001,
     direction: 'rtl',
     orientation: 'vertical',
+    animationDuration: 1000,
     range: {
         'min': -0.5,
         'max': 0.5
@@ -126,7 +128,13 @@ function on_fine_slider_input(values, handle, unencoded, tap, positions, noUiSli
 }
 
 function on_coarse_slider_input(values, handle, unencoded, tap, positions, noUiSlider) {
+    fine_slider.noUiSlider.updateOptions({
+        animate: false
+    });
     fine_slider.noUiSlider.set(0.0);
+    fine_slider.noUiSlider.updateOptions({
+        animate: true
+    });
     on_fine_slider_input(values, handle, unencoded, tap, positions, noUiSlider);
 }
 
@@ -135,6 +143,11 @@ function on_custom_dist_input() {
     custom_distance_2 = parseFloat(cd_2_val.value) * parseFloat(custom_unit_array[cd_2_unit.value]);
     dist_array[dist_array.length - 2] = custom_distance_1;
     dist_array[dist_array.length - 1] = custom_distance_2;
+
+    const dbg_cell_1 = document.getElementById("cust_dbg_1");
+    const dbg_cell_2 = document.getElementById("cust_dbg_2");
+    dbg_cell_1.innerHTML = parseFloat(dist_array[dist_array.length - 2]).toFixed(3);
+    dbg_cell_2.innerHTML = parseFloat(dist_array[dist_array.length - 1]).toFixed(3);
 
     update_pace_table();
 }
