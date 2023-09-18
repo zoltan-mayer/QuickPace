@@ -1,3 +1,27 @@
+
+function resize_sliders_as_needed() {
+    const elements = document.getElementsByClassName('sliderdiv');
+    var needed_height = document.body.scrollHeight;
+    var available_height = document.documentElement.clientHeight;
+
+    if (available_height < needed_height) {
+        var new_slider_height = needed_height - available_height;
+        if (150 > new_slider_height) { new_slider_height = 150; }
+
+        for (let i = 0; i < elements.length; i++) {
+            elements[i].style.height = new_slider_height + 'px';
+        }
+    }
+    else {
+        for (let i = 0; i < elements.length; i++) {
+            elements[i].style.height = 300 + 'px';
+        }
+    }
+}
+
+window.addEventListener('load', resize_sliders_as_needed);
+window.addEventListener('resize', resize_sliders_as_needed);
+
 // Begin: table formatting
 const pace_table = document.getElementById('paceTable');
 const speed_table = document.getElementById('speedTable');
@@ -38,6 +62,14 @@ const custom_unit_array = [1, 1000, 0.3048, one_mile];
 let speed_kph_var = 12.0;
 let fine_speed_value = 0.0;
 let is_last_event_end = false;
+
+function isVerticalScrollbarPresent() {
+    if (element) {
+        return element.scrollHeight > element.clientHeight;
+    } else {
+        return 
+    }
+}
 
 function update_pace_table() {
     let speed_mps = speed_kph_var / 3.6;
@@ -93,19 +125,23 @@ if (kph_store !== null) {
 var cust_dist_store1 = localStorage.getItem('custom_dist_1');
 if (cust_dist_store1 !== null) {
     cd_1_val.value = parseFloat(cust_dist_store1);
+    if (isNaN(cd_1_val)) { cd_1_val = 50.0; }
 }
 var cust_unit_store1 = localStorage.getItem('custom_unit_1');
 if (cust_unit_store1 !== null) {
     cd_1_unit.value = parseInt(cust_unit_store1);
+    if (isNaN(cd_1_unit)) { cd_1_unit = 1; }
 }
 
 var cust_dist_store2 = localStorage.getItem('custom_dist_2');
 if (cust_dist_store2 !== null) {
     cd_2_val.value = parseFloat(cust_dist_store2);
+    if (isNaN(cd_2_val)) { cd_2_val = 100.0; }
 }
 var cust_unit_store2 = localStorage.getItem('custom_unit_2');
 if (cust_unit_store2 !== null) {
     cd_2_unit.value = parseInt(cust_unit_store2);
+    if (isNaN(cd_2_unit)) { cd_2_unit = 3; }
 }
 
 noUiSlider.create(coarse_slider, {
@@ -208,13 +244,9 @@ function on_custom_dist_input() {
 function on_speed_input(is_kph) {
     var kph = parseFloat(kph_cell.value)
     if (isNaN(kph)) { kph = 12.0; }
-    if (5.0 > kph) { kph = 5.0; }
-    if (25.0 < kph) { kph = 25.0; }
 
     var mph = parseFloat(mph_cell.value)
     if (isNaN(mph)) { mph = 7.4565; }
-    if (3.1069 > mph) { mph = 3.1069; }
-    if (15.5343 < mph) { mph = 15.5343; }
 
     if (true == is_kph) {
         speed_kph_var = kph;
