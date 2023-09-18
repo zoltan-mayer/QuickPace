@@ -139,14 +139,18 @@ function on_coarse_slider_input(values, handle, unencoded, tap, positions, noUiS
 }
 
 function on_custom_dist_input() {
+    var cd1 = parseFloat(cd_1_val.value)
+    if (isNaN(cd1)) {
+        cd1 = 0.0;
+    }
+    cd_1_val.innerHTML = cd1;
     custom_distance_1 = parseFloat(cd_1_val.value) * parseFloat(custom_unit_array[cd_1_unit.value]);
-    if (isNaN(custom_distance_1)) {
-        custom_distance_1 = 0.0;
+    var cd2 = parseFloat(cd_2_val.value)
+    if (isNaN(cd2)) {
+        cd2 = 0.0;
     }
+    cd_1_val.innerHTML = cd2;
     custom_distance_2 = parseFloat(cd_2_val.value) * parseFloat(custom_unit_array[cd_2_unit.value]);
-    if (isNaN(custom_distance_2)) {
-        custom_distance_2 = 0.0;
-    }
     dist_array[dist_array.length - 2] = custom_distance_1;
     dist_array[dist_array.length - 1] = custom_distance_2;
 
