@@ -125,23 +125,23 @@ if (kph_store !== null) {
 var cust_dist_store1 = localStorage.getItem('custom_dist_1');
 if (cust_dist_store1 !== null) {
     cd_1_val.value = parseFloat(cust_dist_store1);
-    if (isNaN(cd_1_val)) { cd_1_val = 50.0; }
+    if (isNaN(cd_1_val.value)) { cd_1_val.value = 50.0; }
 }
 var cust_unit_store1 = localStorage.getItem('custom_unit_1');
 if (cust_unit_store1 !== null) {
     cd_1_unit.value = parseInt(cust_unit_store1);
-    if (isNaN(cd_1_unit)) { cd_1_unit = 1; }
+    if (isNaN(cd_1_unit.value)) { cd_1_unit.value = 1; }
 }
 
 var cust_dist_store2 = localStorage.getItem('custom_dist_2');
 if (cust_dist_store2 !== null) {
     cd_2_val.value = parseFloat(cust_dist_store2);
-    if (isNaN(cd_2_val)) { cd_2_val = 100.0; }
+    if (isNaN(cd_2_val.value)) { cd_2_val.value = 100.0; }
 }
 var cust_unit_store2 = localStorage.getItem('custom_unit_2');
 if (cust_unit_store2 !== null) {
     cd_2_unit.value = parseInt(cust_unit_store2);
-    if (isNaN(cd_2_unit)) { cd_2_unit = 3; }
+    if (isNaN(cd_2_unit.value)) { cd_2_unit.value = 3; }
 }
 
 noUiSlider.create(coarse_slider, {
