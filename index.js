@@ -80,6 +80,24 @@ const cd_2_unit = document.getElementById("custom_unit_2");
 const kph_cell = document.getElementById("kphCell");
 const mph_cell = document.getElementById("mphCell");
 
+var cust_dist_store1 = localStorage.getItem('custom_dist_1');
+if (cust_dist_store1 !== null) {
+    cd_1_val.value = parseFloat(cust_dist_store1);
+}
+var cust_unit_store1 = localStorage.getItem('custom_unit_1');
+if (cust_unit_store1 !== null) {
+    cd_1_unit.value = parseInt(cust_unit_store1);
+}
+
+var cust_dist_store2 = localStorage.getItem('custom_dist_2');
+if (cust_dist_store2 !== null) {
+    cd_2_val.value = parseFloat(cust_dist_store2);
+}
+var cust_unit_store2 = localStorage.getItem('custom_unit_2');
+if (cust_unit_store2 !== null) {
+    cd_2_unit.value = parseInt(cust_unit_store2);
+}
+
 noUiSlider.create(coarse_slider, {
     connect: 'lower',
     start: 12.0,
@@ -144,6 +162,8 @@ function on_custom_dist_input() {
         cd1 = 0.0;
     }
     cd_1_val.value = parseFloat(cd1);
+    localStorage.setItem('custom_dist_1', cd_1_val.value);
+    localStorage.setItem('custom_unit_1', cd_1_unit.value);
     custom_distance_1 = parseFloat(cd_1_val.value) * parseFloat(custom_unit_array[cd_1_unit.value]);
 
     var cd2 = parseFloat(cd_2_val.value)
@@ -151,6 +171,8 @@ function on_custom_dist_input() {
         cd2 = 0.0;
     }
     cd_2_val.value = parseFloat(cd2);
+    localStorage.setItem('custom_dist_2', cd_2_val.value);
+    localStorage.setItem('custom_unit_2', cd_2_unit.value);
     custom_distance_2 = parseFloat(cd_2_val.value) * parseFloat(custom_unit_array[cd_2_unit.value]);
 
     dist_array[dist_array.length - 2] = custom_distance_1;

@@ -37,7 +37,7 @@ table {
 }
 
 td.no-border {
-    /*border: none;*/
+    border: none;
 }
 
 th,
