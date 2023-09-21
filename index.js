@@ -41,7 +41,8 @@ for (let i = 0; i < pace_table.rows.length; i++) {
     }
 }
 
-maxHeight -= 10;
+// maxHeight -= 10;
+maxHeight = 19; // TODO
 
 for (let i = 0; i < pace_table.rows.length; i++) {
     for (let j = 0; j < pace_table.rows[0].cells.length; j++) {
