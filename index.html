@@ -1,0 +1,1123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QuickPace</title>
+    <style>
+        :root {
+            --app-height: 100dvh;
+        }
+
+        html {
+            height: var(--app-height);
+            -webkit-text-size-adjust: 100%;
+            text-size-adjust: 100%;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #fff;
+            color: #333;
+            height: var(--app-height);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .debug-vernum {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            padding: 4px 8px;
+            border: 1px solid #d7e3e2;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.92);
+            color: #0f766e;
+            font-size: 12px;
+            line-height: 1;
+            z-index: 10;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            gap: 0;
+        }
+
+        .top-half {
+            flex: 45;
+            overflow: hidden;
+            border-bottom: 1px solid #e0e0e0;
+            padding: 0 16px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .small-table-section {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-shrink: 0;
+            position: relative;
+        }
+
+        .large-table-section {
+            flex: 1;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+        }
+
+        .bottom-half {
+            flex: 55;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f9f9f9;
+            padding: 0 16px;
+        }
+
+        .small-table-section table {
+            width: auto;
+            border-collapse: collapse;
+            line-height: 1;
+        }
+
+        input[type="text"] {
+            border: 1px solid #e0e0e0;
+            padding: 4px 8px;
+            font-size: inherit;
+            border-radius: 2px;
+            box-sizing: border-box;
+            margin: 0;
+        }
+
+        .speed-input {
+            width: 12ch;
+            min-width: 12ch;
+            max-width: 12ch;
+            text-align: center;
+        }
+
+        .small-table-section td {
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+        }
+
+        .small-table-section .unit {
+            width: 4ch;
+            text-align: left;
+            display: inline-block;
+        }
+
+        .deco-bolt {
+            font-size: 1.4em;
+            line-height: 1;
+            position: absolute;
+            left: 12px;
+        }
+
+        .distance-editor {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            width: 100%;
+            max-width: 100%;
+            justify-content: center;
+            min-width: 0;
+            padding: 0 2px;
+        }
+
+        .distance-input {
+            width: auto;
+            min-width: 0;
+            text-align: center;
+        }
+
+        .distance-unit {
+            width: auto;
+            min-width: 0;
+            max-width: 100%;
+            box-sizing: border-box;
+        }
+
+        .large-table-section table {
+            width: 100%;
+            border-collapse: collapse;
+            max-width: 90%;
+            line-height: 1;
+            table-layout: fixed;
+        }
+
+        .dist-label {
+            font-weight: 700;
+        }
+
+        .pace-row td {
+            background: #f0fafa !important;
+        }
+
+        .pace-row .dist-label {
+            color: #0f766e;
+        }
+
+        .large-table-section table th:nth-child(1),
+        .large-table-section table td:nth-child(1) {
+            width: 33.333%;
+        }
+
+        .large-table-section table th:nth-child(2),
+        .large-table-section table td:nth-child(2),
+        .large-table-section table th:nth-child(3),
+        .large-table-section table td:nth-child(3),
+        .large-table-section table th:nth-child(4),
+        .large-table-section table td:nth-child(4),
+        .large-table-section table th:nth-child(5),
+        .large-table-section table td:nth-child(5) {
+            width: 16.667%;
+        }
+
+        table {
+            margin: 0 auto;
+        }
+
+        thead {
+            background: #f0f0f0;
+        }
+
+        th, td {
+            padding: 0;
+            text-align: center;
+            border: 1px solid #e0e0e0;
+            font-size: inherit;
+        }
+
+        th {
+            font-weight: 600;
+        }
+
+        tbody tr:nth-child(even) {
+            background: #fafafa;
+        }
+
+        canvas {
+            display: block;
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+            touch-action: none;
+            cursor: grab;
+        }
+
+        canvas.dragging {
+            cursor: grabbing;
+        }
+    </style>
+</head>
+<body>
+    <div class="debug-vernum" id="debugVernum">v1</div>
+    <div class="container">
+        <div class="top-half">
+            <div class="small-table-section">
+                <span class="deco-bolt">⚡</span>
+                <table id="smallTable">
+                    <tbody>
+                        <tr>
+                            <td><input id="skph" class="speed-input" type="text" inputmode="decimal" spellcheck="false" autocomplete="off" placeholder="Test entry field"><span class="unit">kph</span></td>
+                        </tr>
+                        <tr>
+                            <td><input id="smph" class="speed-input" type="text" inputmode="decimal" spellcheck="false" autocomplete="off" placeholder="Test entry field"><span class="unit">mph</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="large-table-section">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Distance</th>
+                        <th>H</th>
+                        <th>M</th>
+                        <th>S</th>
+                        <th>1/1000</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="pace-row">
+                        <td class="dist-label">1k</td>
+                        <td>Row 1, Col 2</td>
+                        <td>Row 1, Col 3</td>
+                        <td>Row 1, Col 4</td>
+                        <td>Row 1, Col 5</td>
+                    </tr>
+                    <tr class="pace-row">
+                        <td class="dist-label">1mi</td>
+                        <td>Row 2, Col 2</td>
+                        <td>Row 2, Col 3</td>
+                        <td>Row 2, Col 4</td>
+                        <td>Row 2, Col 5</td>
+                    </tr>
+                    <tr>
+                        <td class="dist-label">5k</td>
+                        <td>Row 3, Col 2</td>
+                        <td>Row 3, Col 3</td>
+                        <td>Row 3, Col 4</td>
+                        <td>Row 3, Col 5</td>
+                    </tr>
+                    <tr>
+                        <td class="dist-label">10k</td>
+                        <td>Row 4, Col 2</td>
+                        <td>Row 4, Col 3</td>
+                        <td>Row 4, Col 4</td>
+                        <td>Row 4, Col 5</td>
+                    </tr>
+                    <tr>
+                        <td class="dist-label">10mi</td>
+                        <td>Row 5, Col 2</td>
+                        <td>Row 5, Col 3</td>
+                        <td>Row 5, Col 4</td>
+                        <td>Row 5, Col 5</td>
+                    </tr>
+                    <tr>
+                        <td class="dist-label">half</td>
+                        <td>Row 6, Col 2</td>
+                        <td>Row 6, Col 3</td>
+                        <td>Row 6, Col 4</td>
+                        <td>Row 6, Col 5</td>
+                    </tr>
+                    <tr>
+                        <td class="dist-label">marathon</td>
+                        <td>Row 7, Col 2</td>
+                        <td>Row 7, Col 3</td>
+                        <td>Row 7, Col 4</td>
+                        <td>Row 7, Col 5</td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="distance-editor">
+                                <input id="distance8" class="distance-input" type="text" inputmode="decimal" spellcheck="false" autocomplete="off" aria-label="Custom distance row 8">
+                                <select id="unit8" class="distance-unit" aria-label="Custom distance unit row 8">
+                                    <option value="m">m</option>
+                                    <option value="k">k</option>
+                                    <option value="ft">ft</option>
+                                    <option value="mi">mi</option>
+                                </select>
+                            </div>
+                        </td>
+                        <td>Row 8, Col 2</td>
+                        <td>Row 8, Col 3</td>
+                        <td>Row 8, Col 4</td>
+                        <td>Row 8, Col 5</td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="distance-editor">
+                                <input id="distance9" class="distance-input" type="text" inputmode="decimal" spellcheck="false" autocomplete="off" aria-label="Custom distance row 9">
+                                <select id="unit9" class="distance-unit" aria-label="Custom distance unit row 9">
+                                    <option value="m">m</option>
+                                    <option value="k">k</option>
+                                    <option value="ft">ft</option>
+                                    <option value="mi">mi</option>
+                                </select>
+                            </div>
+                        </td>
+                        <td>Row 9, Col 2</td>
+                        <td>Row 9, Col 3</td>
+                        <td>Row 9, Col 4</td>
+                        <td>Row 9, Col 5</td>
+                    </tr>
+                </tbody>
+            </table>
+            </div>
+        </div>
+
+        <div class="bottom-half">
+            <canvas id="widget" width="400" height="200"></canvas>
+        </div>
+    </div>
+
+    <script>
+        const DEBUG_VERNUM = 13;
+
+        // Internal speed state in meters per hour.
+        let SP = 0;
+        const MIN_KPH = 5;
+        const MAX_KPH = 25;
+        const MIN_SP = MIN_KPH * 1000;
+        const MAX_SP = MAX_KPH * 1000;
+        const DEFAULT_SP = (1000 * 3600) / 330;
+
+        const skphInput = document.getElementById('skph');
+        const smphInput = document.getElementById('smph');
+        const debugVernum = document.getElementById('debugVernum');
+        const canvas = document.getElementById('widget');
+        const ctx = canvas.getContext('2d');
+        const distance8Input = document.getElementById('distance8');
+        const distance9Input = document.getElementById('distance9');
+        const unit8Select = document.getElementById('unit8');
+        const unit9Select = document.getElementById('unit9');
+
+        const STORAGE_SP_KEY = 'runner_sp_mph';
+        const STORAGE_CUSTOM_KEY = 'runner_custom_distances';
+        const MAX_DURATION_SECONDS = 999 * 3600 + 59 * 60 + 59.999;
+
+        debugVernum.textContent = `v${DEBUG_VERNUM}`;
+
+        const THUMB_RADIUS = 32;
+        const KNOB_OUTLINE_WIDTH = THUMB_RADIUS * 0.2;
+        const FINE_ADJUST_KPH = 1;
+        let thumbX = 0;
+        let thumbY = 0;
+        let isDraggingThumb = false;
+        let activePointerId = null;
+        let hasThumbPosition = false;
+        let stableViewportHeight = 0;
+        let keyboardLikelyOpen = false;
+        let hasCompletedLayout = false;
+
+        function clampValue(value, min, max) {
+            return Math.min(max, Math.max(min, value));
+        }
+
+        function clampSP(metersPerHour) {
+            return Math.min(MAX_SP, Math.max(MIN_SP, metersPerHour));
+        }
+
+        function knobEdgePadding() {
+            return THUMB_RADIUS + (KNOB_OUTLINE_WIDTH / 2) + 1;
+        }
+
+        function isTextEntryActive() {
+            const activeElement = document.activeElement;
+            if (!activeElement) {
+                return false;
+            }
+            return activeElement.tagName === 'INPUT' || activeElement.tagName === 'TEXTAREA' || activeElement.tagName === 'SELECT';
+        }
+
+        function updateViewportHeight() {
+            const viewportHeight = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+            const roundedHeight = Math.round(viewportHeight);
+
+            if (!stableViewportHeight || roundedHeight > stableViewportHeight) {
+                stableViewportHeight = roundedHeight;
+            }
+
+            keyboardLikelyOpen = isTextEntryActive() && roundedHeight < (stableViewportHeight - 120);
+            const appliedHeight = keyboardLikelyOpen ? stableViewportHeight : roundedHeight;
+
+            if (!keyboardLikelyOpen) {
+                stableViewportHeight = appliedHeight;
+            }
+
+            document.documentElement.style.setProperty('--app-height', `${appliedHeight}px`);
+        }
+
+        function saveSP() {
+            try {
+                localStorage.setItem(STORAGE_SP_KEY, String(SP));
+            } catch (_error) {
+                // Ignore storage errors (private mode/quota issues).
+            }
+        }
+
+        function saveCustomDistances() {
+            const payload = {
+                row8: { value: distance8Input.value, unit: unit8Select.value },
+                row9: { value: distance9Input.value, unit: unit9Select.value },
+            };
+            try {
+                localStorage.setItem(STORAGE_CUSTOM_KEY, JSON.stringify(payload));
+            } catch (_error) {
+                // Ignore storage errors (private mode/quota issues).
+            }
+        }
+
+        function setDefaultCustomDistances() {
+            distance8Input.value = '400';
+            unit8Select.value = 'm';
+            distance9Input.value = '800';
+            unit9Select.value = 'm';
+        }
+
+        function loadCustomDistances() {
+            try {
+                const raw = localStorage.getItem(STORAGE_CUSTOM_KEY);
+                if (!raw) {
+                    return false;
+                }
+                const parsed = JSON.parse(raw);
+                if (parsed && parsed.row8) {
+                    distance8Input.value = parsed.row8.value || '';
+                    if (['m', 'k', 'ft', 'mi'].includes(parsed.row8.unit)) {
+                        unit8Select.value = parsed.row8.unit;
+                    }
+                }
+                if (parsed && parsed.row9) {
+                    distance9Input.value = parsed.row9.value || '';
+                    if (['m', 'k', 'ft', 'mi'].includes(parsed.row9.unit)) {
+                        unit9Select.value = parsed.row9.unit;
+                    }
+                }
+                return true;
+            } catch (_error) {
+                // Ignore malformed storage payload.
+                return false;
+            }
+        }
+
+        function loadSP() {
+            try {
+                const raw = localStorage.getItem(STORAGE_SP_KEY);
+                if (!raw) {
+                    return null;
+                }
+                const value = Number.parseFloat(raw);
+                return Number.isFinite(value) ? clampSP(value) : null;
+            } catch (_error) {
+                return null;
+            }
+        }
+
+        function unitToMeters(value, unit) {
+            if (unit === 'm') {
+                return value;
+            }
+            if (unit === 'k') {
+                return value * 1000;
+            }
+            if (unit === 'ft') {
+                return value * 0.3048;
+            }
+            if (unit === 'mi') {
+                return value * 1609.344;
+            }
+            return null;
+        }
+
+        function metersToUnit(value, unit) {
+            if (unit === 'm') {
+                return value;
+            }
+            if (unit === 'k') {
+                return value / 1000;
+            }
+            if (unit === 'ft') {
+                return value / 0.3048;
+            }
+            if (unit === 'mi') {
+                return value / 1609.344;
+            }
+            return null;
+        }
+
+        function formatDistanceValue(value) {
+            return Number.parseFloat(value.toFixed(3)).toString();
+        }
+
+        function clampCustomDistanceValue(rawValue, unit) {
+            if (!Number.isFinite(rawValue)) {
+                return null;
+            }
+
+            const minValue = 1;
+            const maxDistanceMeters = (MAX_DURATION_SECONDS / 3600) * SP;
+            const maxValue = metersToUnit(maxDistanceMeters, unit);
+            if (!Number.isFinite(maxValue)) {
+                return Math.max(minValue, rawValue);
+            }
+
+            return clampValue(rawValue, minValue, maxValue);
+        }
+
+        function clampCustomDistanceControl(input, select) {
+            const rawValue = Number.parseFloat(input.value);
+            if (!Number.isFinite(rawValue)) {
+                input.value = '1';
+                return true;
+            }
+
+            const clampedValue = clampCustomDistanceValue(rawValue, select.value);
+            if (!Number.isFinite(clampedValue)) {
+                input.value = '1';
+                return true;
+            }
+
+            input.value = formatDistanceValue(clampedValue);
+            return true;
+        }
+
+        function clampAllCustomDistances() {
+            [
+                [distance8Input, unit8Select],
+                [distance9Input, unit9Select],
+            ].forEach(([input, select]) => {
+                clampCustomDistanceControl(input, select);
+            });
+        }
+
+        function fitCustomDistanceEditors() {
+            const editors = document.querySelectorAll('.distance-editor');
+            editors.forEach((editor) => {
+                const input = editor.querySelector('.distance-input');
+                const select = editor.querySelector('.distance-unit');
+                if (!input || !select) {
+                    return;
+                }
+
+                const cell = editor.closest('td');
+                if (!cell) {
+                    return;
+                }
+
+                const cellWidth = cell.clientWidth;
+                if (cellWidth <= 0) {
+                    return;
+                }
+
+                const gap = 4;
+                const sidePadding = 4;
+                const usable = Math.max(0, cellWidth - sidePadding - gap);
+                const inputWidth = Math.max(34, Math.round(usable * 0.62));
+                const selectWidth = Math.max(30, usable - inputWidth);
+
+                input.style.width = `${inputWidth}px`;
+                select.style.width = `${selectWidth}px`;
+            });
+        }
+
+        function renderSpeedInputsFromSP() {
+            skphInput.value = (SP / 1000).toFixed(3);
+            smphInput.value = (SP / 1609.344).toFixed(3);
+        }
+
+        function getCanvasSize() {
+            return {
+                width: canvas.offsetWidth,
+                height: canvas.offsetHeight,
+            };
+        }
+
+        function xRange(width) {
+            const pad = knobEdgePadding();
+            return {
+                min: pad,
+                max: Math.max(pad, width - pad),
+            };
+        }
+
+        function yRange(height) {
+            const pad = knobEdgePadding();
+            return {
+                min: pad,
+                max: Math.max(pad, height - pad),
+            };
+        }
+
+        function fineToX(fineAdjust, width) {
+            const range = xRange(width);
+            if (range.max === range.min) {
+                return range.min;
+            }
+            const clampedFine = clampValue(fineAdjust, -FINE_ADJUST_KPH, FINE_ADJUST_KPH);
+            const t = (clampedFine + FINE_ADJUST_KPH) / (2 * FINE_ADJUST_KPH);
+            return range.min + t * (range.max - range.min);
+        }
+
+        function xToFine(x, width) {
+            const range = xRange(width);
+            if (range.max === range.min) {
+                return 0;
+            }
+            const t = (x - range.min) / (range.max - range.min);
+            return -FINE_ADJUST_KPH + t * (2 * FINE_ADJUST_KPH);
+        }
+
+        function baseKphToY(baseKph, height) {
+            const range = yRange(height);
+            if (range.max === range.min) {
+                return range.min;
+            }
+            const clampedBase = clampValue(baseKph, MIN_KPH, MAX_KPH);
+            const t = (MAX_KPH - clampedBase) / (MAX_KPH - MIN_KPH);
+            return range.min + t * (range.max - range.min);
+        }
+
+        function yToBaseKph(y, height) {
+            const range = yRange(height);
+            if (range.max === range.min) {
+                return MIN_KPH;
+            }
+            const t = (y - range.min) / (range.max - range.min);
+            return MAX_KPH - t * (MAX_KPH - MIN_KPH);
+        }
+
+        function syncThumbToSP() {
+            const { width, height } = getCanvasSize();
+            thumbY = baseKphToY(SP / 1000, height);
+            thumbX = fineToX(0, width);
+            hasThumbPosition = true;
+        }
+
+        function parseDistanceMeters(distanceText) {
+            const value = distanceText.trim().toLowerCase();
+            if (value === '1k') {
+                return 1000;
+            }
+            if (value === '1mi') {
+                return 1609.344;
+            }
+            if (value === 'half' || value === 'half marathon') {
+                return 21097.5;
+            }
+            if (value === 'marathon') {
+                return 42195;
+            }
+
+            const kMatch = value.match(/^(\d+(?:\.\d+)?)\s*k$/);
+            if (kMatch) {
+                return Number.parseFloat(kMatch[1]) * 1000;
+            }
+
+            const miMatch = value.match(/^(\d+(?:\.\d+)?)\s*mi$/);
+            if (miMatch) {
+                return Number.parseFloat(miMatch[1]) * 1609.344;
+            }
+
+            return null;
+        }
+
+        function getDistanceMetersFromCell(distanceCell) {
+            const customInput = distanceCell.querySelector('.distance-input');
+            const customUnit = distanceCell.querySelector('.distance-unit');
+
+            if (customInput && customUnit) {
+                const rawValue = Number.parseFloat(customInput.value);
+                if (!Number.isFinite(rawValue)) {
+                    return null;
+                }
+
+                const clampedValue = clampCustomDistanceValue(rawValue, customUnit.value);
+                if (!Number.isFinite(clampedValue)) {
+                    return null;
+                }
+
+                return unitToMeters(clampedValue, customUnit.value);
+            }
+
+            return parseDistanceMeters(distanceCell.textContent);
+        }
+
+        function updateBottomTableTimes() {
+            const rows = document.querySelectorAll('.large-table-section tbody tr');
+            rows.forEach((row) => {
+                const distanceCell = row.cells[0];
+                if (!distanceCell || row.cells.length < 5) {
+                    return;
+                }
+
+                const distanceMeters = getDistanceMetersFromCell(distanceCell);
+                if (!Number.isFinite(SP) || SP <= 0 || !Number.isFinite(distanceMeters)) {
+                    row.cells[1].textContent = '';
+                    row.cells[2].textContent = '';
+                    row.cells[3].textContent = '';
+                    row.cells[4].textContent = '';
+                    return;
+                }
+
+                const totalSeconds = (distanceMeters / SP) * 3600;
+                const wholeSeconds = Math.floor(totalSeconds);
+                let h = Math.floor(wholeSeconds / 3600);
+                let m = Math.floor((wholeSeconds % 3600) / 60);
+                let s = wholeSeconds % 60;
+                let ms = Math.round((totalSeconds - wholeSeconds) * 1000);
+
+                if (ms === 1000) {
+                    ms = 0;
+                    s += 1;
+                }
+                if (s === 60) {
+                    s = 0;
+                    m += 1;
+                }
+                if (m === 60) {
+                    m = 0;
+                    h += 1;
+                }
+
+                const showH = h !== 0;
+                const showM = showH || m !== 0;
+                const showS = showM || s !== 0;
+
+                row.cells[1].textContent = showH ? String(h) : '';
+                row.cells[2].textContent = showM ? String(m) : '';
+                row.cells[3].textContent = showS ? String(s) : '';
+                row.cells[4].textContent = String(ms);
+            });
+        }
+
+        function drawCanvas() {
+            const width = canvas.offsetWidth;
+            const height = canvas.offsetHeight;
+            const midX = width / 2;
+            const midY = height / 2;
+
+            ctx.clearRect(0, 0, width, height);
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, width, height);
+
+            // Reference guides for y-speed range and x fine adjustment.
+            ctx.strokeStyle = '#d7e3e2';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(midX, THUMB_RADIUS);
+            ctx.lineTo(midX, height - THUMB_RADIUS);
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.moveTo(THUMB_RADIUS, midY);
+            ctx.lineTo(width - THUMB_RADIUS, midY);
+            ctx.stroke();
+
+            // Light tick marks and labels.
+            ctx.strokeStyle = '#c4d7d5';
+            ctx.fillStyle = '#6f8683';
+            ctx.font = '12px sans-serif';
+            ctx.textAlign = 'left';
+            ctx.textBaseline = 'middle';
+
+            [25, 20, 15, 10, 5].forEach((kph) => {
+                const y = baseKphToY(kph, height);
+                ctx.beginPath();
+                ctx.moveTo(midX - 6, y);
+                ctx.lineTo(midX + 6, y);
+                ctx.stroke();
+                ctx.fillText(String(kph), midX + 10, y);
+            });
+
+            const xLabels = [
+                { fine: -1, label: '-1.0' },
+                { fine: 0, label: '0' },
+                { fine: 1, label: '+1.0' },
+            ];
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'top';
+            xLabels.forEach((item) => {
+                const x = fineToX(item.fine, width);
+                ctx.beginPath();
+                ctx.moveTo(x, midY - 6);
+                ctx.lineTo(x, midY + 6);
+                ctx.stroke();
+                ctx.fillText(item.label, x, midY + 9);
+            });
+
+            ctx.fillStyle = '#0f766e';
+            ctx.beginPath();
+            ctx.arc(thumbX, thumbY, THUMB_RADIUS, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Decorative darker outline around knob.
+            ctx.strokeStyle = '#0b4f49';
+            ctx.lineWidth = KNOB_OUTLINE_WIDTH;
+            ctx.stroke();
+        }
+
+        function applyKph(kphValue, syncWidget = true) {
+            SP = clampSP(kphValue * 1000);
+            saveSP();
+            renderSpeedInputsFromSP();
+            clampAllCustomDistances();
+            saveCustomDistances();
+            updateBottomTableTimes();
+            if (syncWidget) {
+                syncThumbToSP();
+            }
+            drawCanvas();
+        }
+
+        function setFromKph(kphValue) {
+            const kph = Number.parseFloat(kphValue);
+            if (!Number.isFinite(kph)) {
+                return false;
+            }
+            applyKph(kph, true);
+            return true;
+        }
+
+        function setFromMph(mphValue) {
+            const mph = Number.parseFloat(mphValue);
+            if (!Number.isFinite(mph)) {
+                return false;
+            }
+            applyKph(mph * 1.609344, true);
+            return true;
+        }
+
+        function commitKph() {
+            const ok = setFromKph(skphInput.value);
+            if (!ok) {
+                renderSpeedInputsFromSP();
+            }
+        }
+
+        function commitMph() {
+            const ok = setFromMph(smphInput.value);
+            if (!ok) {
+                renderSpeedInputsFromSP();
+            }
+        }
+
+        skphInput.addEventListener('focus', () => {
+            skphInput.select();
+        });
+
+        smphInput.addEventListener('focus', () => {
+            smphInput.select();
+        });
+
+        skphInput.addEventListener('blur', commitKph);
+        smphInput.addEventListener('blur', commitMph);
+
+        skphInput.addEventListener('change', commitKph);
+        smphInput.addEventListener('change', commitMph);
+
+        skphInput.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') {
+                commitKph();
+                skphInput.blur();
+            }
+        });
+
+        smphInput.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') {
+                commitMph();
+                smphInput.blur();
+            }
+        });
+
+        document.querySelectorAll('.distance-input, .distance-unit').forEach((element) => {
+            element.addEventListener('input', () => {
+                saveCustomDistances();
+                updateBottomTableTimes();
+            });
+            element.addEventListener('change', () => {
+                const editor = element.closest('.distance-editor');
+                const input = editor ? editor.querySelector('.distance-input') : null;
+                const select = editor ? editor.querySelector('.distance-unit') : null;
+                if (input && select) {
+                    clampCustomDistanceControl(input, select);
+                }
+                saveCustomDistances();
+                updateBottomTableTimes();
+            });
+        });
+
+        document.querySelectorAll('.distance-input').forEach((input) => {
+            input.addEventListener('blur', () => {
+                const editor = input.closest('.distance-editor');
+                const select = editor ? editor.querySelector('.distance-unit') : null;
+                if (select) {
+                    clampCustomDistanceControl(input, select);
+                }
+                saveCustomDistances();
+                updateBottomTableTimes();
+            });
+        });
+
+        function updateSpeedFromThumbPosition() {
+            const { width, height } = getCanvasSize();
+            const baseKph = yToBaseKph(thumbY, height);
+            const fineKph = xToFine(thumbX, width);
+            const adjustedKph = clampValue(baseKph + fineKph, MIN_KPH, MAX_KPH);
+            applyKph(adjustedKph, false);
+        }
+
+        function getCanvasPoint(event) {
+            const rect = canvas.getBoundingClientRect();
+            return {
+                x: event.clientX - rect.left,
+                y: event.clientY - rect.top,
+            };
+        }
+
+        canvas.addEventListener('pointerdown', (event) => {
+            if (event.pointerType === 'mouse' && event.button !== 0) {
+                return;
+            }
+            const point = getCanvasPoint(event);
+            const dx = point.x - thumbX;
+            const dy = point.y - thumbY;
+            const hitRadius = THUMB_RADIUS * 1.3;
+            if ((dx * dx) + (dy * dy) > (hitRadius * hitRadius)) {
+                return;
+            }
+            activePointerId = event.pointerId;
+            isDraggingThumb = true;
+            canvas.classList.add('dragging');
+            canvas.setPointerCapture(event.pointerId);
+            event.preventDefault();
+        });
+
+        canvas.addEventListener('pointermove', (event) => {
+            if (!isDraggingThumb || event.pointerId !== activePointerId) {
+                return;
+            }
+            const { width, height } = getCanvasSize();
+            const rangeX = xRange(width);
+            const rangeY = yRange(height);
+            const point = getCanvasPoint(event);
+
+            thumbX = clampValue(point.x, rangeX.min, rangeX.max);
+            thumbY = clampValue(point.y, rangeY.min, rangeY.max);
+            updateSpeedFromThumbPosition();
+            event.preventDefault();
+        });
+
+        function stopThumbDrag(event) {
+            if (!isDraggingThumb || event.pointerId !== activePointerId) {
+                return;
+            }
+            isDraggingThumb = false;
+            activePointerId = null;
+            canvas.classList.remove('dragging');
+            if (canvas.hasPointerCapture(event.pointerId)) {
+                canvas.releasePointerCapture(event.pointerId);
+            }
+        }
+
+        canvas.addEventListener('pointerup', stopThumbDrag);
+        canvas.addEventListener('pointercancel', stopThumbDrag);
+
+        if (!loadCustomDistances()) {
+            setDefaultCustomDistances();
+        }
+        const storedSP = loadSP();
+        if (storedSP !== null) {
+            applyKph(storedSP / 1000, true);
+        } else {
+            applyKph(DEFAULT_SP / 1000, true);
+        }
+
+        // Dynamic table row sizing
+        function resizeTableRows() {
+            const topHalf = document.querySelector('.top-half');
+            const smallTableSection = document.querySelector('.small-table-section');
+            const smallTable = document.querySelector('#smallTable');
+            const largeTable = document.querySelector('.large-table-section table');
+            
+            const totalHeight = topHalf.clientHeight;
+            const smallTableRows = smallTable.querySelectorAll('tr').length;
+            const largeTableRows = largeTable.querySelectorAll('tr').length;
+            
+            // Calculate row heights
+            const rowHeight = totalHeight / (smallTableRows + largeTableRows + 0.67); // 0.67 = one-third gap
+            const gapHeight = rowHeight * 0.33;
+            
+            // Set small table
+            const smallTableHeight = rowHeight * smallTableRows;
+            smallTableSection.style.height = smallTableHeight + 'px';
+            smallTableSection.style.marginBottom = gapHeight + 'px';
+            smallTableSection.style.paddingTop = gapHeight + 'px';
+            
+            smallTable.querySelectorAll('tr').forEach(row => {
+                row.style.height = rowHeight + 'px';
+            });
+            
+            // Set large table
+            largeTable.querySelectorAll('tr').forEach(row => {
+                row.style.height = rowHeight + 'px';
+            });
+            
+            const fontSize = Math.max(10, rowHeight * 0.5);
+            smallTable.style.fontSize = fontSize + 'px';
+            largeTable.style.fontSize = fontSize + 'px';
+            fitCustomDistanceEditors();
+        }
+
+        let layoutFrame = 0;
+
+        function runLayout() {
+            layoutFrame = 0;
+            updateViewportHeight();
+            if (isTextEntryActive() && hasCompletedLayout) {
+                return;
+            }
+            if (keyboardLikelyOpen && hasCompletedLayout) {
+                return;
+            }
+            resizeTableRows();
+            resizeCanvas();
+            hasCompletedLayout = true;
+        }
+
+        function scheduleLayout() {
+            if (layoutFrame) {
+                cancelAnimationFrame(layoutFrame);
+            }
+            layoutFrame = requestAnimationFrame(() => {
+                runLayout();
+            });
+        }
+
+        window.addEventListener('resize', scheduleLayout);
+        window.addEventListener('load', scheduleLayout);
+        if (window.visualViewport) {
+            window.visualViewport.addEventListener('resize', scheduleLayout);
+            window.visualViewport.addEventListener('scroll', scheduleLayout);
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => {
+                scheduleLayout();
+                requestAnimationFrame(scheduleLayout);
+            });
+        } else {
+            scheduleLayout();
+            requestAnimationFrame(scheduleLayout);
+        }
+
+        // Responsive canvas sizing
+        function resizeCanvas() {
+            const container = canvas.parentElement;
+            const width = container.clientWidth * 0.9;
+            const height = container.clientHeight;
+            const dpr = window.devicePixelRatio || 1;
+            
+            // Set display size (CSS pixels)
+            canvas.style.width = width + 'px';
+            canvas.style.height = height + 'px';
+            
+            // Set actual size (drawing surface)
+            canvas.width = Math.floor(width * dpr);
+            canvas.height = Math.floor(height * dpr);
+
+            // Reset transform to avoid cumulative scaling on repeated resizes.
+            ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+            if (!isDraggingThumb) {
+                syncThumbToSP();
+            } else {
+                const size = getCanvasSize();
+                const rangeX = xRange(size.width);
+                const rangeY = yRange(size.height);
+                thumbX = clampValue(thumbX, rangeX.min, rangeX.max);
+                thumbY = clampValue(thumbY, rangeY.min, rangeY.max);
+            }
+            drawCanvas();
+        }
+
+        updateViewportHeight();
+    </script>
+</body>
+</html>
