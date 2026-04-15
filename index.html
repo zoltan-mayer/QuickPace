@@ -59,6 +59,7 @@
             padding: 0 16px;
             display: flex;
             flex-direction: column;
+            position: relative;
         }
 
         .small-table-section {
@@ -66,7 +67,13 @@
             justify-content: center;
             align-items: center;
             flex-shrink: 0;
+        }
+
+        .small-table-wrap {
             position: relative;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .large-table-section {
@@ -125,7 +132,10 @@
             font-size: 1.4em;
             line-height: 1;
             position: absolute;
-            left: 12px;
+            top: 6px;
+            left: 50%;
+            transform: translateX(-50%);
+            pointer-events: none;
         }
 
         .distance-editor {
@@ -164,8 +174,12 @@
             font-weight: 700;
         }
 
-        .pace-row td {
-            background: #f0fafa !important;
+        .pace-row-k td {
+            background: #f3fcfc !important;
+        }
+
+        .pace-row-mi td {
+            background: #eef8f8 !important;
         }
 
         .pace-row .dist-label {
@@ -229,18 +243,20 @@
     <div class="debug-vernum" id="debugVernum">v1</div>
     <div class="container">
         <div class="top-half">
+            <span class="deco-bolt">⚡</span>
             <div class="small-table-section">
-                <span class="deco-bolt">⚡</span>
-                <table id="smallTable">
-                    <tbody>
-                        <tr>
-                            <td><input id="skph" class="speed-input" type="text" inputmode="decimal" spellcheck="false" autocomplete="off" placeholder="Test entry field"><span class="unit">kph</span></td>
-                        </tr>
-                        <tr>
-                            <td><input id="smph" class="speed-input" type="text" inputmode="decimal" spellcheck="false" autocomplete="off" placeholder="Test entry field"><span class="unit">mph</span></td>
-                        </tr>
-                    </tbody>
-                </table>
+                <div class="small-table-wrap">
+                    <table id="smallTable">
+                        <tbody>
+                            <tr>
+                                <td><input id="skph" class="speed-input" type="text" inputmode="decimal" spellcheck="false" autocomplete="off" placeholder="Test entry field"><span class="unit">kph</span></td>
+                            </tr>
+                            <tr>
+                                <td><input id="smph" class="speed-input" type="text" inputmode="decimal" spellcheck="false" autocomplete="off" placeholder="Test entry field"><span class="unit">mph</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
             <div class="large-table-section">
             <table>
@@ -254,14 +270,14 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr class="pace-row">
+                    <tr class="pace-row pace-row-k">
                         <td class="dist-label">1k</td>
                         <td>Row 1, Col 2</td>
                         <td>Row 1, Col 3</td>
                         <td>Row 1, Col 4</td>
                         <td>Row 1, Col 5</td>
                     </tr>
-                    <tr class="pace-row">
+                    <tr class="pace-row pace-row-mi">
                         <td class="dist-label">1mi</td>
                         <td>Row 2, Col 2</td>
                         <td>Row 2, Col 3</td>
@@ -348,7 +364,7 @@
     </div>
 
     <script>
-        const DEBUG_VERNUM = 13;
+        const DEBUG_VERNUM = 19;
 
         // Internal speed state in meters per hour.
         let SP = 0;
@@ -360,6 +376,7 @@
 
         const skphInput = document.getElementById('skph');
         const smphInput = document.getElementById('smph');
+        const decoBolt = document.querySelector('.deco-bolt');
         const debugVernum = document.getElementById('debugVernum');
         const canvas = document.getElementById('widget');
         const ctx = canvas.getContext('2d');
@@ -381,6 +398,8 @@
         let thumbY = 0;
         let isDraggingThumb = false;
         let activePointerId = null;
+        let dragOffsetX = 0;
+        let dragOffsetY = 0;
         let hasThumbPosition = false;
         let stableViewportHeight = 0;
         let keyboardLikelyOpen = false;
@@ -595,6 +614,23 @@
                 input.style.width = `${inputWidth}px`;
                 select.style.width = `${selectWidth}px`;
             });
+        }
+
+        function positionBolt() {
+            const topHalf = document.querySelector('.top-half');
+            const smallTableSection = document.querySelector('.small-table-section');
+            const distanceHeader = document.querySelector('.large-table-section thead th:first-child');
+            if (!topHalf || !smallTableSection || !distanceHeader || !decoBolt) {
+                return;
+            }
+
+            const topHalfRect = topHalf.getBoundingClientRect();
+            const smallTableRect = smallTableSection.getBoundingClientRect();
+            const headerRect = distanceHeader.getBoundingClientRect();
+            const centerX = (headerRect.left + headerRect.width / 2) - topHalfRect.left;
+            const centerY = (smallTableRect.top + smallTableRect.height / 2) - topHalfRect.top;
+            decoBolt.style.left = `${Math.round(centerX)}px`;
+            decoBolt.style.top = `${Math.round(centerY)}px`;
         }
 
         function renderSpeedInputsFromSP() {
@@ -963,6 +999,8 @@
                 return;
             }
             activePointerId = event.pointerId;
+            dragOffsetX = point.x - thumbX;
+            dragOffsetY = point.y - thumbY;
             isDraggingThumb = true;
             canvas.classList.add('dragging');
             canvas.setPointerCapture(event.pointerId);
@@ -978,8 +1016,8 @@
             const rangeY = yRange(height);
             const point = getCanvasPoint(event);
 
-            thumbX = clampValue(point.x, rangeX.min, rangeX.max);
-            thumbY = clampValue(point.y, rangeY.min, rangeY.max);
+            thumbX = clampValue(point.x - dragOffsetX, rangeX.min, rangeX.max);
+            thumbY = clampValue(point.y - dragOffsetY, rangeY.min, rangeY.max);
             updateSpeedFromThumbPosition();
             event.preventDefault();
         });
@@ -1013,6 +1051,7 @@
         function resizeTableRows() {
             const topHalf = document.querySelector('.top-half');
             const smallTableSection = document.querySelector('.small-table-section');
+            const largeTableSection = document.querySelector('.large-table-section');
             const smallTable = document.querySelector('#smallTable');
             const largeTable = document.querySelector('.large-table-section table');
             
@@ -1038,11 +1077,17 @@
             largeTable.querySelectorAll('tr').forEach(row => {
                 row.style.height = rowHeight + 'px';
             });
+
+            const tableAvailableWidth = largeTableSection.clientWidth * 0.9;
+            const tableMaxWidthFromHeight = largeTableSection.clientHeight;
+            const tableWidth = Math.min(tableAvailableWidth, tableMaxWidthFromHeight);
+            largeTable.style.width = `${Math.max(0, Math.floor(tableWidth))}px`;
             
             const fontSize = Math.max(10, rowHeight * 0.5);
             smallTable.style.fontSize = fontSize + 'px';
             largeTable.style.fontSize = fontSize + 'px';
             fitCustomDistanceEditors();
+            positionBolt();
         }
 
         let layoutFrame = 0;
@@ -1090,8 +1135,8 @@
         // Responsive canvas sizing
         function resizeCanvas() {
             const container = canvas.parentElement;
-            const width = container.clientWidth * 0.9;
             const height = container.clientHeight;
+            const width = Math.min(container.clientWidth * 0.9, height);
             const dpr = window.devicePixelRatio || 1;
             
             // Set display size (CSS pixels)
