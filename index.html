@@ -90,11 +90,38 @@
             justify-content: center;
             background: #f9f9f9;
             padding: 0 16px;
+            position: relative;
+        }
+
+        .knob-hint {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -100%);
+            padding: 5px 10px;
+            border-radius: 999px;
+            background: rgba(15, 118, 110, 0.92);
+            color: #ffffff;
+            font-size: 12px;
+            font-weight: 600;
+            line-height: 1;
+            letter-spacing: 0.02em;
+            white-space: nowrap;
+            pointer-events: none;
+            box-shadow: 0 4px 14px rgba(11, 79, 73, 0.25);
+            opacity: 0;
+            transition: opacity 240ms ease;
+            z-index: 2;
+        }
+
+        .knob-hint.visible {
+            opacity: 1;
         }
 
         .small-table-section table {
             width: auto;
             border-collapse: collapse;
+            border-spacing: 0;
             line-height: 1;
         }
 
@@ -115,17 +142,17 @@
         }
 
         .small-table-section td {
-            padding: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 4px;
+            padding: 0 2px;
+            text-align: center;
+            white-space: nowrap;
         }
 
         .small-table-section .unit {
             width: 4ch;
             text-align: left;
             display: inline-block;
+            margin-left: 4px;
+            vertical-align: middle;
         }
 
         .deco-bolt {
@@ -165,7 +192,7 @@
         .large-table-section table {
             width: 100%;
             border-collapse: collapse;
-            max-width: 90%;
+            max-width: 99.6%;
             line-height: 1;
             table-layout: fixed;
         }
@@ -175,7 +202,7 @@
         }
 
         .pace-row-k td {
-            background: #f3fcfc !important;
+            background: #f7fefe !important;
         }
 
         .pace-row-mi td {
@@ -188,7 +215,7 @@
 
         .large-table-section table th:nth-child(1),
         .large-table-section table td:nth-child(1) {
-            width: 33.333%;
+            width: 40%;
         }
 
         .large-table-section table th:nth-child(2),
@@ -196,10 +223,13 @@
         .large-table-section table th:nth-child(3),
         .large-table-section table td:nth-child(3),
         .large-table-section table th:nth-child(4),
-        .large-table-section table td:nth-child(4),
+        .large-table-section table td:nth-child(4) {
+            width: 14%;
+        }
+
         .large-table-section table th:nth-child(5),
         .large-table-section table td:nth-child(5) {
-            width: 16.667%;
+            width: 18%;
         }
 
         table {
@@ -221,7 +251,7 @@
             font-weight: 600;
         }
 
-        tbody tr:nth-child(even) {
+        .large-table-section tbody tr:nth-child(even) {
             background: #fafafa;
         }
 
@@ -360,11 +390,12 @@
 
         <div class="bottom-half">
             <canvas id="widget" width="400" height="200"></canvas>
+            <div id="knobHint" class="knob-hint" aria-hidden="true">Drag me</div>
         </div>
     </div>
 
     <script>
-        const DEBUG_VERNUM = 19;
+        const DEBUG_VERNUM = 35;
 
         // Internal speed state in meters per hour.
         let SP = 0;
@@ -380,6 +411,7 @@
         const debugVernum = document.getElementById('debugVernum');
         const canvas = document.getElementById('widget');
         const ctx = canvas.getContext('2d');
+        const knobHint = document.getElementById('knobHint');
         const distance8Input = document.getElementById('distance8');
         const distance9Input = document.getElementById('distance9');
         const unit8Select = document.getElementById('unit8');
@@ -387,6 +419,7 @@
 
         const STORAGE_SP_KEY = 'runner_sp_mph';
         const STORAGE_CUSTOM_KEY = 'runner_custom_distances';
+        const STORAGE_HINT_SEEN_KEY = 'runner_knob_hint_seen_v1';
         const MAX_DURATION_SECONDS = 999 * 3600 + 59 * 60 + 59.999;
 
         debugVernum.textContent = `v${DEBUG_VERNUM}`;
@@ -404,6 +437,134 @@
         let stableViewportHeight = 0;
         let keyboardLikelyOpen = false;
         let hasCompletedLayout = false;
+        let hintDismissed = false;
+        let hintHideTimer = null;
+        let pulseAnimFrame = 0;
+        let pulseActive = false;
+        let pulseStartMs = 0;
+        let knobPulseScale = 1;
+        let knobGlowAlpha = 0;
+
+        function easeOutCubic(t) {
+            const x = clampValue(t, 0, 1);
+            return 1 - ((1 - x) ** 3);
+        }
+
+        function easeInOutSine(t) {
+            const x = clampValue(t, 0, 1);
+            return -(Math.cos(Math.PI * x) - 1) / 2;
+        }
+
+        function positionKnobHint() {
+            if (!knobHint || hintDismissed) {
+                return;
+            }
+            const canvasRect = canvas.getBoundingClientRect();
+            const parentRect = canvas.parentElement.getBoundingClientRect();
+            const x = (canvasRect.left - parentRect.left) + thumbX;
+            const y = (canvasRect.top - parentRect.top) + thumbY - THUMB_RADIUS - 10;
+            knobHint.style.left = `${Math.round(x)}px`;
+            knobHint.style.top = `${Math.round(y)}px`;
+        }
+
+        function hideKnobHint(markSeen = false) {
+            hintDismissed = true;
+            pulseActive = false;
+            knobPulseScale = 1;
+            knobGlowAlpha = 0;
+
+            if (hintHideTimer) {
+                clearTimeout(hintHideTimer);
+                hintHideTimer = null;
+            }
+            if (pulseAnimFrame) {
+                cancelAnimationFrame(pulseAnimFrame);
+                pulseAnimFrame = 0;
+            }
+            if (knobHint) {
+                knobHint.classList.remove('visible');
+            }
+            if (markSeen) {
+                try {
+                    localStorage.setItem(STORAGE_HINT_SEEN_KEY, '1');
+                } catch (_error) {
+                    // Ignore storage errors.
+                }
+            }
+            drawCanvas();
+        }
+
+        function animateKnobPulse(nowMs) {
+            if (!pulseActive) {
+                return;
+            }
+
+            const elapsed = nowMs - pulseStartMs;
+            const pulseInDuration = 420;
+            const settleDuration = 640;
+            const holdDuration = 240;
+            const totalDuration = pulseInDuration + settleDuration + holdDuration;
+
+            if (elapsed < pulseInDuration) {
+                const t = easeOutCubic(elapsed / pulseInDuration);
+                knobPulseScale = 1 + (0.18 * t);
+                knobGlowAlpha = 0.28 * t;
+            } else if (elapsed < (pulseInDuration + settleDuration)) {
+                const t = easeInOutSine((elapsed - pulseInDuration) / settleDuration);
+                knobPulseScale = 1.18 - (0.18 * t);
+                knobGlowAlpha = 0.28 * (1 - t);
+            } else if (elapsed < totalDuration) {
+                knobPulseScale = 1;
+                knobGlowAlpha = 0;
+            } else {
+                pulseActive = false;
+                knobPulseScale = 1;
+                knobGlowAlpha = 0;
+            }
+
+            positionKnobHint();
+            drawCanvas();
+
+            if (pulseActive) {
+                pulseAnimFrame = requestAnimationFrame(animateKnobPulse);
+            } else {
+                pulseAnimFrame = 0;
+            }
+        }
+
+        function startKnobOnboardingHint() {
+            if (!knobHint || hintDismissed) {
+                return;
+            }
+
+            let hasSeenHint = false;
+            try {
+                hasSeenHint = localStorage.getItem(STORAGE_HINT_SEEN_KEY) === '1';
+            } catch (_error) {
+                hasSeenHint = false;
+            }
+
+            positionKnobHint();
+            knobHint.classList.add('visible');
+
+            pulseActive = true;
+            pulseStartMs = performance.now();
+            if (pulseAnimFrame) {
+                cancelAnimationFrame(pulseAnimFrame);
+            }
+            pulseAnimFrame = requestAnimationFrame(animateKnobPulse);
+
+            if (hintHideTimer) {
+                clearTimeout(hintHideTimer);
+            }
+            if (!hasSeenHint) {
+                return;
+            }
+
+            hintHideTimer = setTimeout(() => {
+                hideKnobHint();
+            }, 2200);
+        }
 
         function clampValue(value, min, max) {
             return Math.min(max, Math.max(min, value));
@@ -608,8 +769,8 @@
                 const gap = 4;
                 const sidePadding = 4;
                 const usable = Math.max(0, cellWidth - sidePadding - gap);
-                const inputWidth = Math.max(34, Math.round(usable * 0.62));
-                const selectWidth = Math.max(30, usable - inputWidth);
+                const inputWidth = Math.max(40, Math.round(usable * 0.7));
+                const selectWidth = Math.max(26, usable - inputWidth);
 
                 input.style.width = `${inputWidth}px`;
                 select.style.width = `${selectWidth}px`;
@@ -859,8 +1020,19 @@
             });
 
             ctx.fillStyle = '#0f766e';
+            if (knobGlowAlpha > 0) {
+                ctx.save();
+                ctx.globalAlpha = knobGlowAlpha;
+                ctx.fillStyle = '#14b8a6';
+                ctx.beginPath();
+                ctx.arc(thumbX, thumbY, THUMB_RADIUS * (1.55 + (knobPulseScale - 1) * 0.9), 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            }
+
+            const knobRadius = THUMB_RADIUS * knobPulseScale;
             ctx.beginPath();
-            ctx.arc(thumbX, thumbY, THUMB_RADIUS, 0, Math.PI * 2);
+            ctx.arc(thumbX, thumbY, knobRadius, 0, Math.PI * 2);
             ctx.fill();
 
             // Decorative darker outline around knob.
@@ -998,6 +1170,7 @@
             if ((dx * dx) + (dy * dy) > (hitRadius * hitRadius)) {
                 return;
             }
+            hideKnobHint(true);
             activePointerId = event.pointerId;
             dragOffsetX = point.x - thumbX;
             dragOffsetY = point.y - thumbY;
@@ -1032,6 +1205,7 @@
             if (canvas.hasPointerCapture(event.pointerId)) {
                 canvas.releasePointerCapture(event.pointerId);
             }
+            positionKnobHint();
         }
 
         canvas.addEventListener('pointerup', stopThumbDrag);
@@ -1078,12 +1252,13 @@
                 row.style.height = rowHeight + 'px';
             });
 
-            const tableAvailableWidth = largeTableSection.clientWidth * 0.9;
+            const tableAvailableWidth = largeTableSection.clientWidth * 0.996;
             const tableMaxWidthFromHeight = largeTableSection.clientHeight;
-            const tableWidth = Math.min(tableAvailableWidth, tableMaxWidthFromHeight);
+            const isWide = largeTableSection.clientWidth > largeTableSection.clientHeight;
+            const tableWidth = isWide ? Math.min(tableAvailableWidth, tableMaxWidthFromHeight) : tableAvailableWidth;
             largeTable.style.width = `${Math.max(0, Math.floor(tableWidth))}px`;
             
-            const fontSize = Math.max(10, rowHeight * 0.5);
+            const fontSize = Math.max(10, rowHeight * 0.46);
             smallTable.style.fontSize = fontSize + 'px';
             largeTable.style.fontSize = fontSize + 'px';
             fitCustomDistanceEditors();
@@ -1126,10 +1301,16 @@
             document.addEventListener('DOMContentLoaded', () => {
                 scheduleLayout();
                 requestAnimationFrame(scheduleLayout);
+                requestAnimationFrame(() => {
+                    requestAnimationFrame(startKnobOnboardingHint);
+                });
             });
         } else {
             scheduleLayout();
             requestAnimationFrame(scheduleLayout);
+            requestAnimationFrame(() => {
+                requestAnimationFrame(startKnobOnboardingHint);
+            });
         }
 
         // Responsive canvas sizing
